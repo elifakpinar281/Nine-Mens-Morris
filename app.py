@@ -45,17 +45,17 @@ def action():
     action_type = data.get('type')
 
     if game.check_for_win() is not None:
-        return jsonify({"ok": False, **get_game_state()})
+        return jsonify({"success": False, **get_game_state()})
 
-    ok = False
+    success = False
     if action_type == 'place':
-        ok = game.place_man(data.get('position'))
+        success = game.place_man(data.get('position'))
     elif action_type == 'remove':
-        ok = game.remove_man(data.get('position'))
+        success = game.remove_man(data.get('position'))
     elif action_type == 'move':
-        ok = game.move_man(data.get('start'), data.get('end'))
+        success = game.move_man(data.get('start'), data.get('end'))
 
-    return jsonify({"ok": ok, **get_game_state()})
+    return jsonify({"success": success, **get_game_state()})
 
 if __name__ == '__main__':
     app.run(port=3000, debug=True)
