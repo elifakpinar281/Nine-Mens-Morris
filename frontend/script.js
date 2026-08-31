@@ -110,6 +110,11 @@ function updatePlayerCards() {
     const p1Hand = gameState.unplacedMen[1];
     const p2Hand = gameState.unplacedMen[2];
 
+    const p1Mills = gameState.mills ? gameState.mills[1] : 0;
+    const p2Mills = gameState.mills ? gameState.mills[2] : 0;
+    document.getElementById('p1-mills').innerText = p1Mills;
+    document.getElementById('p2-mills').innerText = p2Mills;
+
     const p1Tokens = document.getElementById('p1-tokens');
     if (p1Tokens) {
         p1Tokens.innerHTML = '';
@@ -239,8 +244,13 @@ function checkGameOver() {
     if (gameState.winner !== null && gameState.winner !== undefined) {
         const modal = document.getElementById('modal-overlay');
         if (modal) {
-            document.getElementById('modal-title').innerText = gameState.winner === 0 ? "It's a Draw!" : `Player ${gameState.winner} Wins!`;
+            document.getElementById('modal-title').innerText = gameState.winner === 0 ? "IT'S A DRAW!" : `PLAYER ${gameState.winner} WINS!`;
             document.getElementById('stat-moves').innerText = gameState.moveHistory ? gameState.moveHistory.length : 0;
+
+            const p1Mills = gameState.mills ? gameState.mills[1] : 0;
+            const p2Mills = gameState.mills ? gameState.mills[2] : 0;
+            document.getElementById('stat-mills-p1').innerText = p1Mills;
+            document.getElementById('stat-mills-p2').innerText = p2Mills;
 
             const durationMs = Date.now() - gameStartTime;
             const totalSec = Math.floor(durationMs / 1000);

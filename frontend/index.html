@@ -18,7 +18,7 @@
                     <div class="token-row" id="p1-tokens"></div>
                     <div class="phase-tag" id="p1-phase">Phase 2:Moving</div>
                     <div class="card-stats">
-                        <span>0 mills</span>
+                        <span><strong id="p1-mills">0</strong> mills</span>
                         <span><strong id="p1-hand">0</strong> in hand</span>
                     </div>
                 </div>
@@ -27,7 +27,7 @@
                     <div class="token-row" id="p2-tokens"></div>
                     <div class="phase-tag" id="p2-phase">Phase 2:Moving</div>
                     <div class="card-stats">
-                        <span>0 mills</span>
+                        <span><strong id="p2-mills">0</strong> mills</span>
                         <span><strong id="p2-hand">0</strong> in hand</span>
                     </div>
                 </div>
@@ -68,6 +68,7 @@
             </div>
         </div>
     </div>
+
     <div class="modal-overlay hidden" id="help-modal-overlay">
         <div class="modal-card help-card">
             <h2>HOW TO PLAY</h2>
@@ -86,6 +87,19 @@
             <button class="btn btn-primary" onclick="closeHelpModal()">GOT IT!</button>
         </div>
     </div>
+
+    <div class="modal-overlay hidden" id="modal-overlay">
+        <div class="modal-card">
+            <h2 id="modal-title">PLAYER 1 WINS!</h2>
+            <div class="modal-body">
+                <p>MOVES: <span id="stat-moves">0</span></p>
+                <p>MILLS P1: <span id="stat-mills-p1">0</span> | P2: <span id="stat-mills-p2">0</span></p>
+                <p>DURATION: <span id="stat-duration">0:00</span></p>
+            </div>
+            <button class="btn btn-primary" onclick="resetGame()">REMATCH</button>
+        </div>
+    </div>
+
     <script src="script.js"></script>
 </body>
 </html>

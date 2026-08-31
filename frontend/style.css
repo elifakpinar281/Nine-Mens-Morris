@@ -314,6 +314,19 @@ header h1 {
     gap: 15px;
 }
 
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
+.modal-body span {
+    color: #d9383a;
+    font-weight: bold;
+}
+
 .help-card {
     text-align: left;
     max-height: 80vh;

@@ -22,7 +22,8 @@ def get_game_state():
         "remove": game.remove,
         "winner": game.check_for_win(),
         "targets": compute_targets(),
-        "moveHistory": game.move_history
+        "moveHistory": game.move_history,
+        "mills": getattr(game, 'mills', {1: 0, 2: 0})
     }
 
 @app.route('/')
