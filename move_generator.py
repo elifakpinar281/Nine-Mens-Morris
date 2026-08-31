@@ -29,6 +29,23 @@ def is_game_over(game):
         return True
     return False
 
+def get_winner(game):
+    """
+    Returns 1 if player 1 has won, 2 if player 2 has won, 0 for a draw,
+    or None if the game hasn't ended yet. Only call this after checking
+    is_game_over(game) is True.
+    """
+    if not is_game_over(game):
+        return None
+    if game.placed_men[1] < 3:
+        return 2
+    if game.placed_men[2] < 3:
+        return 1
+    if game.draw_limit <= 0:
+        return 0
+    opponent = 2 if game.current_player == 1 else 1
+    return opponent
+
 if __name__ == "__main__":
     game = Game_rules()
     new_game = apply_move(game, 0)
@@ -70,3 +87,6 @@ if __name__ == "__main__":
 
     print("Game over test 1 (new game, should be False):", is_game_over(game))
     print("Game over test 2 (trapped, should be True):", is_game_over(game_trap))
+
+    print("Winner test 1 (new game, should be None):", get_winner(game))
+    print("Winner test 2 (trapped, opponent should win, should be 2):", get_winner(game_trap))
