@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nine Men's Morris</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="game-container">
+        <header>
+            <h1>NINE MEN'S MORRIS</h1>
+        </header>
+        <div class="main-content">
+            <div class="left-panel">
+                <div class="player-card" id="panel-p1">
+                    <h2>Player 1</h2>
+                    <div class="token-row" id="p1-tokens"></div>
+                    <div class="phase-tag" id="p1-phase">Phase 2:Moving</div>
+                    <div class="card-stats">
+                        <span>0 mills</span>
+                        <span><strong id="p1-hand">0</strong> in hand</span>
+                    </div>
+                </div>
+                <div class="player-card" id="panel-p2">
+                    <h2>Player 2</h2>
+                    <div class="token-row" id="p2-tokens"></div>
+                    <div class="phase-tag" id="p2-phase">Phase 2:Moving</div>
+                    <div class="card-stats">
+                        <span>0 mills</span>
+                        <span><strong id="p2-hand">0</strong> in hand</span>
+                    </div>
+                </div>
+            </div>
+            <div class="center-panel">
+                <div class="board-wrapper">
+                    <svg id="muehle-board" viewBox="0 0 400 400">
+                        <line x1="20" y1="20" x2="380" y2="20" class="board-line" />
+                        <line x1="380" y1="20" x2="380" y2="380" class="board-line" />
+                        <line x1="380" y1="380" x2="20" y2="380" class="board-line" />
+                        <line x1="20" y1="380" x2="20" y2="20" class="board-line" />
+                        <line x1="80" y1="80" x2="320" y2="80" class="board-line" />
+                        <line x1="320" y1="80" x2="320" y2="320" class="board-line" />
+                        <line x1="320" y1="320" x2="80" y2="320" class="board-line" />
+                        <line x1="80" y1="320" x2="80" y2="80" class="board-line" />
+                        <line x1="140" y1="140" x2="260" y2="140" class="board-line" />
+                        <line x1="260" y1="140" x2="260" y2="260" class="board-line" />
+                        <line x1="260" y1="260" x2="140" y2="260" class="board-line" />
+                        <line x1="140" y1="260" x2="140" y2="140" class="board-line" />
+                        <line x1="200" y1="20" x2="200" y2="140" class="board-line" />
+                        <line x1="200" y1="260" x2="200" y2="380" class="board-line" />
+                        <line x1="20" y1="200" x2="140" y2="200" class="board-line" />
+                        <line x1="260" y1="200" x2="380" y2="200" class="board-line" />
+                        <g id="nodes-container"></g>
+                    </svg>
+                </div>
+                <div class="controls-area">
+                    <div class="status-bar" id="status-bar">Player 1's turn - select and move a piece</div>
+                    <div class="button-group">
+                        <button class="btn btn-primary" onclick="resetGame()">New Game</button>
+                        <button class="btn btn-icon" onclick="openHelpModal()">?</button>
+                    </div>
+                </div>
+            </div>
+            <div class="right-panel">
+                <h3>Moves</h3>
+                <div class="moves-list" id="moves-list"></div>
+            </div>
+        </div>
+    </div>
+    <div class="modal-overlay hidden" id="help-modal-overlay">
+        <div class="modal-card help-card">
+            <h2>HOW TO PLAY</h2>
+            <div class="help-content">
+                <h3>OBJECTIVE</h3>
+                <p>Reduce your opponent to less than 3 pieces or block all of their legal moves.</p>
+                <h3>PHASE 1: PLACING</h3>
+                <p>Players take turns placing their 9 pieces one by one onto empty points on the board.</p>
+                <h3>PHASE 2: MOVING</h3>
+                <p>Once all 9 pieces are placed, players move one piece per turn along a line to an adjacent empty spot.</p>
+                <h3>PHASE 3: FLYING</h3>
+                <p>When a player is reduced to exactly 3 pieces, their pieces can "fly" to ANY vacant point on the board!</p>
+                <h3>FORMING A MILL</h3>
+                <p>Line up 3 pieces in a straight row (horizontal or vertical) to form a MILL. This allows you to remove one opponent piece from the board!</p>
+            </div>
+            <button class="btn btn-primary" onclick="closeHelpModal()">GOT IT!</button>
+        </div>
+    </div>
+    <script src="script.js"></script>
+</body>
+</html>
