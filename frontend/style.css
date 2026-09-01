@@ -1,0 +1,346 @@
+@import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+    font-family: 'Press Start 2P', monospace;
+}
+
+body {
+    background-color: #e6e2d8;
+    color: #1a1a1a;
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 1.5vh 1.5vw;
+}
+
+.game-container {
+    width: 96vw;
+    height: 94vh;
+    background-color: #f7f5ee;
+    border: 4px solid #1a1a1a;
+    box-shadow: 10px 10px 0px #1a1a1a;
+    display: flex;
+    flex-direction: column;
+    padding: 24px;
+    gap: 20px;
+}
+
+header {
+    text-align: center;
+    background: repeating-linear-gradient(
+        90deg,
+        #f5f0e6 0px,
+        #f5f0e6 18px,
+        #ebe5d8 18px,
+        #ebe5d8 36px
+    );
+    padding: 18px 0;
+    border: 4px solid #1a1a1a;
+    box-shadow: 4px 4px 0px #1a1a1a;
+    width: 100%;
+}
+
+header h1 {
+    font-size: clamp(1.4rem, 2.8vh, 2.2rem);
+    color: #d9383a;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    font-weight: bold;
+    text-shadow:
+        -2px -2px 0 #1a1a1a,
+         2px -2px 0 #1a1a1a,
+        -2px  2px 0 #1a1a1a,
+         2px  2px 0 #1a1a1a,
+         3px  3px 0 #1a1a1a;
+}
+
+.main-content {
+    display: grid;
+    grid-template-columns: 280px 1fr 260px;
+    gap: 24px;
+    flex: 1;
+    min-height: 0;
+}
+
+.left-panel {
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    gap: 20px;
+}
+
+.player-card {
+    background-color: #ffffff;
+    border: 4px solid #1a1a1a;
+    box-shadow: 5px 5px 0px #1a1a1a;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+}
+
+.player-card h2 {
+    font-size: 0.95rem;
+}
+
+.token-row {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+}
+
+.token-dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    border: 2px solid #1a1a1a;
+}
+
+.token-p1 { background-color: #ffcccc; }
+.token-p2 { background-color: #d0d0d0; }
+.token-empty { background-color: #ffffff; border-style: solid; }
+
+.phase-tag {
+    align-self: flex-start;
+    padding: 6px 12px;
+    font-size: 0.55rem;
+    border-radius: 12px;
+}
+
+#panel-p1 .phase-tag {
+    background-color: #ffe5e5;
+    color: #d9383a;
+}
+
+#panel-p2 .phase-tag {
+    background-color: #e8eeff;
+    color: #3b5998;
+}
+
+.card-stats {
+    display: flex;
+    justify-content: space-between;
+    font-size: 0.55rem;
+    color: #1a1a1a;
+    margin-top: 4px;
+}
+
+.center-panel {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: space-between;
+    height: 100%;
+    min-height: 0;
+}
+
+.board-wrapper {
+    background-color: #ffffff;
+    border: 4px solid #1a1a1a;
+    box-shadow: 5px 5px 0px #1a1a1a;
+    padding: 20px;
+    width: 100%;
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 0;
+}
+
+#muehle-board {
+    height: 100%;
+    width: 100%;
+    max-height: 52vh;
+    aspect-ratio: 1 / 1;
+}
+
+.board-line {
+    stroke: #1a1a1a;
+    stroke-width: 3;
+}
+
+.board-node {
+    fill: #1a1a1a;
+    cursor: pointer;
+}
+
+.piece-p1 {
+    fill: #d9383a;
+    stroke: #1a1a1a;
+    stroke-width: 2.5;
+    cursor: pointer;
+}
+
+.piece-p2 {
+    fill: #1a1a1a;
+    stroke: #ffffff;
+    stroke-width: 2.5;
+    cursor: pointer;
+}
+
+.selected {
+    stroke: #ffcc00 !important;
+    stroke-width: 4 !important;
+}
+
+.valid-target {
+    fill: #4caf50 !important;
+    r: 9px !important;
+    cursor: pointer;
+}
+
+.piece-removable {
+    stroke: #d9383a !important;
+    stroke-width: 4px !important;
+    animation: pulse 0.8s infinite alternate;
+}
+
+@keyframes pulse {
+    0% { opacity: 0.7; }
+    100% { opacity: 1; }
+}
+
+.controls-area {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 16px;
+    width: 100%;
+    margin-top: 12px;
+}
+
+.status-bar {
+    font-size: 0.65rem;
+    text-align: center;
+}
+
+.button-group {
+    display: flex;
+    gap: 12px;
+}
+
+.btn {
+    background-color: #ffffff;
+    border: 4px solid #1a1a1a;
+    box-shadow: 4px 4px 0px #1a1a1a;
+    padding: 10px 18px;
+    font-size: 0.65rem;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn:active {
+    transform: translate(2px, 2px);
+    box-shadow: 2px 2px 0px #1a1a1a;
+}
+
+.btn-icon {
+    background-color: #d9383a;
+    color: #ffffff;
+}
+
+.right-panel {
+    background-color: #ffffff;
+    border: 4px solid #1a1a1a;
+    box-shadow: 5px 5px 0px #1a1a1a;
+    padding: 20px;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 0;
+}
+
+.right-panel h3 {
+    font-size: 0.85rem;
+    margin-bottom: 16px;
+}
+
+.moves-list {
+    flex: 1;
+    overflow-y: auto;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    padding-right: 6px;
+}
+
+.moves-list::-webkit-scrollbar {
+    width: 6px;
+}
+.moves-list::-webkit-scrollbar-thumb {
+    background: #1a1a1a;
+}
+
+.move-row {
+    font-size: 0.6rem;
+    display: flex;
+    justify-content: space-between;
+    line-height: 1.4;
+}
+
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+}
+
+.modal-overlay.hidden {
+    display: none !important;
+}
+
+.modal-card {
+    background-color: #ffffff;
+    border: 4px solid #1a1a1a;
+    box-shadow: 8px 8px 0px #1a1a1a;
+    padding: 25px;
+    max-width: 450px;
+    width: 90%;
+    text-align: center;
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+}
+
+.modal-body {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    font-size: 0.7rem;
+    line-height: 1.5;
+}
+
+.modal-body span {
+    color: #d9383a;
+    font-weight: bold;
+}
+
+.help-card {
+    text-align: left;
+    max-height: 80vh;
+    overflow-y: auto;
+}
+
+.help-content h3 {
+    font-size: 0.7rem;
+    margin-top: 10px;
+    color: #d9383a;
+}
+
+.help-content p {
+    font-size: 0.6rem;
+    line-height: 1.4;
+    margin-top: 4px;
+}

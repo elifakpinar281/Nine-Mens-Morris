@@ -12,14 +12,28 @@ class Game_rules:
                  18: [10, 19], 19: [18, 16, 20, 22], 20: [19, 13], 21: [9, 22],
                  22: [21, 19, 23], 23: [22, 14]}
 
+    NOTATION = {
+        0: "a7", 1: "d7", 2: "g7",
+        3: "b6", 4: "d6", 5: "f6",
+        6: "c5", 7: "d5", 8: "e5",
+        9: "a4", 10: "b4", 11: "c4",
+        12: "e4", 13: "f4", 14: "g4",
+        15: "c3", 16: "d3", 17: "e3",
+        18: "b2", 19: "d2", 20: "f2",
+        21: "a1", 22: "d1", 23: "g1"
+    }
+
     def __init__(self):
         # 0 = empty, 1 = player 1, 2 = player 2
         self.board = [0] * 24
         self.current_player = 1
         self.unplaced_men = {1: 9, 2: 9}
         self.placed_men = {1: 0, 2: 0}
+        self.mills = {1: 0, 2: 0}
         self.remove = False
         self.draw_limit = 10
+        self.move_history = []
+        self.pending_move_notation = ""
 
     def switch_player(self):
         self.current_player = 2 if self.current_player == 1 else 1
@@ -56,9 +70,13 @@ class Game_rules:
         self.unplaced_men[self.current_player] -= 1
         self.placed_men[self.current_player] += 1
 
+        notation = self.NOTATION[position]
         if self.mill_formed(position):
+            self.mills[self.current_player] += 1
             self.remove = True
+            self.pending_move_notation = notation
         else:
+            self.move_history.append({"player": self.current_player, "text": notation})
             self.switch_player()
 
         return True
@@ -90,8 +108,11 @@ class Game_rules:
         self.board[position] = 0
         self.remove = False
         self.placed_men[opponent] -= 1
+        full_notation = f"{self.pending_move_notation},{self.NOTATION[position]}" if self.pending_move_notation else f"x{self.NOTATION[position]}"
+        self.move_history.append({"player": self.current_player, "text": full_notation})
+        self.pending_move_notation = ""
+
         self.switch_player()
-        
 
         return True
 
@@ -128,9 +149,13 @@ class Game_rules:
         if self.placed_men[1] == 3 and self.placed_men[2] == 3:
             self.draw_limit -= 1
 
+        notation = f"{self.NOTATION[start]}-{self.NOTATION[end]}"
         if self.mill_formed(end):
+            self.mills[self.current_player] += 1
             self.remove = True
+            self.pending_move_notation = notation
         else:
+            self.move_history.append({"player": self.current_player, "text": notation})
             self.switch_player()
         
         return True
@@ -148,16 +173,16 @@ class Game_rules:
         return True
 
     def check_for_win(self):
-        opponent = 2 if self.current_player == 1 else 1
-
-        if self.unplaced_men[self.current_player] != 0 or self.unplaced_men[opponent] != 0:
+        if self.unplaced_men[1] != 0 or self.unplaced_men[2] != 0:
             return None
-        
-        if self.placed_men[opponent] < 3:
-            return self.current_player
 
-        if self.trapped(opponent):
-            return self.current_player
+        for player in (1,2):
+            opponent = 2 if player == 1 else 1
+            if self.placed_men[player] < 3:
+                return opponent
+
+        if self.trapped(self.current_player):
+            return 2 if self.current_player == 1 else 1
 
         if self.draw_limit <= 0:
             return 0  #  for draw
