@@ -156,8 +156,8 @@ class Game_rules:
         if self.placed_men[opponent] < 3:
             return self.current_player
 
-        if self.trapped(self.current_player):
-            return opponent
+        if self.trapped(opponent):
+            return self.current_player
 
         if self.draw_limit <= 0:
             return 0  #  for draw
