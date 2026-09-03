@@ -1,4 +1,5 @@
 from enum import Enum
+from game_rules import Game_rules
 
 class Phase(Enum):
     PLACING = 1
@@ -48,6 +49,14 @@ class Heuristics:
         if weights is None:
             weights = self.DEFAULT_WEIGHTS
         self.weights = weights
+
+        self.mills_by_position = {}
+        for point in range(24):
+            mills = []
+            for mill in Game_rules.MILLS:
+                if point in mill:
+                    mills.append(mill)
+            self.mills_by_position[point] = mills
 
     def evaluate(self, game, player):
         opponent = self.opponent_of(player)
@@ -105,6 +114,12 @@ class Heuristics:
             return True
         return False
 
+    @staticmethod
+    def opponent_of(player):
+        if player == 1:
+            return 2
+        else:
+            return 1
 
     # More pieces allow more aggressive play
     def pieces_diff(self, game, player):
@@ -231,30 +246,19 @@ class Heuristics:
 
     # Checks whether moving a piece to a position would form a mill
     def move_forms_mill(self, game, start, end, player):
-        for mill in game.MILLS:
-            if end not in mill:
-                continue
+        for mill in self.mills_by_position[end]:
             completes = True
-            for spot in mill:
-                if spot == end:
+            for point in mill:
+                if point == end:
                     continue
 
-                occupant = game.board[spot]
+                owner = game.board[point]
+                if point == start:
+                    owner = 0
 
-                if spot == start:
-                    occupant = 0
-
-                if occupant != player:
+                if owner != player:
                     completes = False
                     break
-
             if completes:
                 return True
         return False
-
-    @staticmethod
-    def opponent_of(player):
-        if player == 1:
-            return 2
-        else:
-            return 1
