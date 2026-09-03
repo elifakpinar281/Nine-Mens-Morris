@@ -69,30 +69,48 @@ class Heuristics:
             return 0
 
         weights = self.weights[self.phase_of(game, player)]
-
-        piece_difference = self.pieces_diff(game, player) - self.pieces_diff(game, opponent)
-        mills_difference = self.count_mills(game, player) - self.count_mills(game, opponent)
-        two_row_difference = self.count_two_in_a_row(game, player) - self.count_two_in_a_row(game, opponent)
-        position_difference = self.positional_value(game, player) - self.positional_value(game, opponent)
-        mobility_difference = self.count_legal_moves(game, player) - self.count_legal_moves(game, opponent)
-        swinging_difference = self.count_swinging_mills(game, player) - self.count_swinging_mills(game, opponent)
-        blocked_difference = self.count_blocked_opponents(game, opponent) - self.count_blocked_opponents(game, player)
-        mill_moves_difference = self.count_mill_moves(game, player) - self.count_mill_moves(game, opponent)
-        own_threats = self.immediate_threats(game, player)
-        opponent_threats = self.immediate_threats(game, opponent)
-        multiple_threats_difference = max(0, own_threats - 1) - max(0, opponent_threats - 1)
+        differences = self.heuristic_differences(game, player, opponent, weights)
 
         score = 0
-        score += weights["piece_difference"] * piece_difference
-        score += weights["mills"] * mills_difference
-        score += weights["two_in_a_row"] * two_row_difference
-        score += weights["blocked_opponent"] * blocked_difference
-        score += weights["positional"] * position_difference
-        score += weights["mobility"] * mobility_difference
-        score += weights["swinging"] * swinging_difference
-        score += weights["mill_moves"] * mill_moves_difference
-        score += weights["multiple_threats"] * multiple_threats_difference
+        for name, difference in differences.items():
+            score += weights[name] * difference
         return score
+
+
+    def heuristic_differences(self, game, player, opponent, weights):
+        own_two_in_a_row = self.count_two_in_a_row(game, player)
+        opponent_two_in_a_row = self.count_two_in_a_row(game, opponent)
+        own_mill_moves = None
+        opponent_mill_moves = None
+
+        differences = {
+            "piece_difference": self.pieces_diff(game, player) - self.pieces_diff(game, opponent),
+            "mills": self.count_mills(game, player) - self.count_mills(game, opponent),
+            "two_in_a_row": own_two_in_a_row - opponent_two_in_a_row,
+            "positional": self.positional_value(game, player) - self.positional_value(game, opponent),
+            "blocked_opponent": self.count_blocked_opponents(game, opponent) - self.count_blocked_opponents(game, player),
+            "mobility": 0,
+            "swinging": 0,
+            "mill_moves": 0,
+        }
+
+        # These might be 0 weighted in some phases -> only compute when they actually matter
+        if weights["mobility"]:
+            differences["mobility"] = self.count_legal_moves(game, player) - self.count_legal_moves(game, opponent)
+
+        if weights["swinging"]:
+            differences["swinging"] = self.count_swinging_mills(game, player) - self.count_swinging_mills(game, opponent)
+
+        if weights["mill_moves"]:
+            own_mill_moves = self.count_mill_moves(game, player)
+            opponent_mill_moves = self.count_mill_moves(game, opponent)
+            differences["mill_moves"] = own_mill_moves - opponent_mill_moves
+
+        own_threats = self.threats(game, player, own_two_in_a_row, own_mill_moves)
+        opponent_threats = self.threats(game, opponent, opponent_two_in_a_row, opponent_mill_moves)
+        differences["multiple_threats"] = max(0, own_threats - 1) - max(0, opponent_threats - 1)
+        return differences
+
 
     def phase_of(self, game, player):
         if game.unplaced_men[player] > 0:
@@ -237,12 +255,12 @@ class Heuristics:
 
         return count
 
-    # During placing, it looks for positions that could complete a mill
-    # During moving and flying, it looks for moves that can immediately form a mill
-    def immediate_threats(self, game, player):
+    def threats(self, game, player, two_in_a_row, mill_moves):
         if game.unplaced_men[player] > 0:
-            return self.count_two_in_a_row(game, player)
-        return self.count_mill_moves(game, player)
+            return two_in_a_row
+        if mill_moves is None:
+            mill_moves = self.count_mill_moves(game, player)
+        return mill_moves
 
     # Checks whether moving a piece to a position would form a mill
     def move_forms_mill(self, game, start, end, player):
