@@ -7,7 +7,8 @@ class Phase(Enum):
     FLYING = 3
 
 class Heuristics:
-    WIN = 100_000 # Outweighs all other heuristic values
+    # Winning or losing positions is always more important than any heuristic value
+    WIN = 100_000
 
     DEFAULT_WEIGHTS = {
         Phase.PLACING: {
@@ -46,10 +47,11 @@ class Heuristics:
     }
 
     def __init__(self, weights=None):
-        if weights is None:
+        if weights is None: # use default weights if no custom weights provided
             weights = self.DEFAULT_WEIGHTS
         self.weights = weights
 
+        # stores all mills that each board position belongs to to avoid searching through all mills every time we want to check whether a position forms a mill
         self.mills_by_position = {}
         for point in range(24):
             mills = []
@@ -61,18 +63,19 @@ class Heuristics:
     def evaluate(self, game, player):
         opponent = self.opponent_of(player)
 
+        # Handle terminal positions before calculating heuristic value
         if self.is_lost(game, opponent):
             return self.WIN
         if self.is_lost(game, player):
             return -self.WIN
-        if game.draw_limit <= 0:
+        if game.draw_limit <= 0: # draw has same value for both players
             return 0
 
         weights = self.weights[self.phase_of(game, player)]
         differences = self.heuristic_differences(game, player, opponent, weights)
 
         score = 0
-        for name, difference in differences.items():
+        for name, difference in differences.items(): # combine all heuristic values with their weights
             score += weights[name] * difference
         return score
 
@@ -88,13 +91,15 @@ class Heuristics:
             "mills": self.count_mills(game, player) - self.count_mills(game, opponent),
             "two_in_a_row": own_two_in_a_row - opponent_two_in_a_row,
             "positional": self.positional_value(game, player) - self.positional_value(game, opponent),
+
+            # blocking the opponent is better for us so the order is reversed here
             "blocked_opponent": self.count_blocked_opponents(game, opponent) - self.count_blocked_opponents(game, player),
             "mobility": 0,
             "swinging": 0,
             "mill_moves": 0,
         }
 
-        # These might be 0 weighted in some phases -> only compute when they actually matter
+        # These might be weighted 0 in some phases -> only compute when they actually matter
         if weights["mobility"]:
             differences["mobility"] = self.count_legal_moves(game, player) - self.count_legal_moves(game, opponent)
 
@@ -108,6 +113,8 @@ class Heuristics:
 
         own_threats = self.threats(game, player, own_two_in_a_row, own_mill_moves)
         opponent_threats = self.threats(game, opponent, opponent_two_in_a_row, opponent_mill_moves)
+
+        # Only threats beyond the first count as multiple threats
         differences["multiple_threats"] = max(0, own_threats - 1) - max(0, opponent_threats - 1)
         return differences
 
@@ -139,12 +146,12 @@ class Heuristics:
         else:
             return 1
 
-    # More pieces allow more aggressive play
+    # More pieces give more opportunities to create mills
     def pieces_diff(self, game, player):
         return game.placed_men[player] + game.unplaced_men[player]
 
 
-    # More mills gives more opportunities to capture opponent pieces
+    # More mills give more opportunities to capture opponent pieces
     def count_mills(self, game, player):
         count = 0
         for a, b, c in game.MILLS:
@@ -165,7 +172,7 @@ class Heuristics:
 
     # More blocked opponent pieces restrict the opponent's movement
     def count_blocked_opponents(self, game, player):
-        if game.placed_men[player] == 3:
+        if game.placed_men[player] == 3: # flying pieces cannot be blocked
             return 0
         count = 0
         for position in range(24):
@@ -183,7 +190,7 @@ class Heuristics:
 
     # More legal moves give more flexibility and strategic options
     def count_legal_moves(self, game, player):
-        if game.unplaced_men[player] > 0:
+        if game.unplaced_men[player] > 0: # placing -> every empty position reachable
             empties = 0
             for position in range(24):
                 if game.board[position] == 0:
@@ -191,7 +198,7 @@ class Heuristics:
 
             return empties
 
-        flying = game.placed_men[player] == 3
+        flying = game.placed_men[player] == 3 # flying -> every empty position reachable
         moves = 0
         for start in range(24):
             if game.board[start] != player:
@@ -202,13 +209,13 @@ class Heuristics:
                     if game.board[end] == 0:
                         moves += 1
             else:
-                for end in game.ADJACENT[start]:
+                for end in game.ADJACENT[start]: # moving -> only adjacent empty positions reachable
                     if game.board[end] == 0:
                         moves += 1
         return moves
 
 
-    # Positions with more neighbours give more movement opportunities and strategic options
+    # Positions with more neighbours give more movement options
     def positional_value(self, game, player):
         value = 0
         for position in range(24):
@@ -217,7 +224,7 @@ class Heuristics:
 
         return value
 
-    # Encourages moving pieces between mills to repeatedly capture opponent pieces
+    # Count pieces that can move between mills to repeatedly capture opponent pieces
     def count_swinging_mills(self, game, player):
         if game.placed_men[player] == 3:
             return 0
@@ -227,9 +234,10 @@ class Heuristics:
             if game.board[position] != player:
                 continue
 
-            if not game.mill_formed(position, player):
+            if not game.mill_formed(position, player): # piece must currently be part of a mill
                 continue
 
+            # Check whether it can move to an adjacent position to form another mill
             for neighbour in game.ADJACENT[position]:
                 if game.board[neighbour] == 0 and self.move_forms_mill(game, position, neighbour, player):
                     count += 1
@@ -237,7 +245,7 @@ class Heuristics:
 
         return count
 
-    # Counts moves that can immediately create a mill
+    # Counts moves that immediately create a mill
     def count_mill_moves(self, game, player):
         count = 0
         for start in range(24):
@@ -245,7 +253,7 @@ class Heuristics:
                 continue
 
             if game.placed_men[player] == 3:
-                targets = range(24)
+                targets = range(24) # flying pieces can move to any empty position
             else:
                 targets = game.ADJACENT[start]
 
@@ -255,6 +263,8 @@ class Heuristics:
 
         return count
 
+    # During placing, a two_in_a_row is a potential mill
+    # After placing, a mill move is an immediate threat
     def threats(self, game, player, two_in_a_row, mill_moves):
         if game.unplaced_men[player] > 0:
             return two_in_a_row
@@ -262,8 +272,9 @@ class Heuristics:
             mill_moves = self.count_mill_moves(game, player)
         return mill_moves
 
-    # Checks whether moving a piece to a position would form a mill
+    # Checks whether moving a piece from start to end would form a mill
     def move_forms_mill(self, game, start, end, player):
+        # Only mills that contain the end position are checked
         for mill in self.mills_by_position[end]:
             completes = True
             for point in mill:
@@ -271,7 +282,7 @@ class Heuristics:
                     continue
 
                 owner = game.board[point]
-                if point == start:
+                if point == start: # start position becomes empty after move
                     owner = 0
 
                 if owner != player:
