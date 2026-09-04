@@ -51,7 +51,7 @@ class Heuristics:
             weights = self.DEFAULT_WEIGHTS
         self.weights = weights
 
-        # stores all mills that each board position belongs to to avoid searching through all mills every time we want to check whether a position forms a mill
+        # stores the mills for each board position to avoid checking all mills every time
         self.mills_by_position = {}
         for point in range(24):
             mills = []
@@ -71,52 +71,50 @@ class Heuristics:
         if game.draw_limit <= 0: # draw has same value for both players
             return 0
 
-        weights = self.weights[self.phase_of(game, player)]
-        differences = self.heuristic_differences(game, player, opponent, weights)
+        # Each player is scored with the weights of their own phase -> players can be in different phases
+        player_weights = self.weights[self.phase_of(game, player)]
+        opponent_weights = self.weights[self.phase_of(game, opponent)]
+        player_score = self.own_score(game, player, opponent, player_weights)
+        opponent_score = self.own_score(game, opponent, player, opponent_weights)
 
-        score = 0
-        for name, difference in differences.items(): # combine all heuristic values with their weights
-            score += weights[name] * difference
-        return score
+        # Calculate difference between both scores
+        return player_score - opponent_score
 
 
-    def heuristic_differences(self, game, player, opponent, weights):
-        own_two_in_a_row = self.count_two_in_a_row(game, player)
-        opponent_two_in_a_row = self.count_two_in_a_row(game, opponent)
-        own_mill_moves = None
-        opponent_mill_moves = None
+    # Weighted sum of one player's own features
+    def own_score(self, game, player, opponent, weights):
+        two_in_a_row = self.count_two_in_a_row(game, player)
+        mill_moves = None
 
-        differences = {
-            "piece_difference": self.pieces_diff(game, player) - self.pieces_diff(game, opponent),
-            "mills": self.count_mills(game, player) - self.count_mills(game, opponent),
-            "two_in_a_row": own_two_in_a_row - opponent_two_in_a_row,
-            "positional": self.positional_value(game, player) - self.positional_value(game, opponent),
-
-            # blocking the opponent is better for us so the order is reversed here
-            "blocked_opponent": self.count_blocked_opponents(game, opponent) - self.count_blocked_opponents(game, player),
+        features = {
+            "piece_difference": self.pieces_diff(game, player),
+            "mills": self.count_mills(game, player),
+            "two_in_a_row": two_in_a_row,
+            "positional": self.positional_value(game, player),
+            "blocked_opponent": self.count_blocked_opponents(game, opponent), # blocked opponents is better for the player
             "mobility": 0,
             "swinging": 0,
             "mill_moves": 0,
         }
 
-        # These might be weighted 0 in some phases -> only compute when they actually matter
+        # These might be weighted 0 in a given phase -> only compute when they actually matter
         if weights["mobility"]:
-            differences["mobility"] = self.count_legal_moves(game, player) - self.count_legal_moves(game, opponent)
+            features["mobility"] = self.count_legal_moves(game, player)
 
         if weights["swinging"]:
-            differences["swinging"] = self.count_swinging_mills(game, player) - self.count_swinging_mills(game, opponent)
+            features["swinging"] = self.count_swinging_mills(game, player)
 
         if weights["mill_moves"]:
-            own_mill_moves = self.count_mill_moves(game, player)
-            opponent_mill_moves = self.count_mill_moves(game, opponent)
-            differences["mill_moves"] = own_mill_moves - opponent_mill_moves
+            mill_moves = self.count_mill_moves(game, player)
+            features["mill_moves"] = mill_moves
 
-        own_threats = self.threats(game, player, own_two_in_a_row, own_mill_moves)
-        opponent_threats = self.threats(game, opponent, opponent_two_in_a_row, opponent_mill_moves)
+        threats = self.threats(game, player, two_in_a_row, mill_moves)
+        features["multiple_threats"] = max(0, threats - 1)
 
-        # Only threats beyond the first count as multiple threats
-        differences["multiple_threats"] = max(0, own_threats - 1) - max(0, opponent_threats - 1)
-        return differences
+        score = 0
+        for name, value in features.items(): # combine all features with their weights
+            score += weights[name] * value
+        return score
 
 
     def phase_of(self, game, player):
