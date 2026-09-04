@@ -34,7 +34,7 @@
             </div>
             <div class="center-panel">
                 <div class="board-wrapper">
-                    <svg id="muehle-board" viewBox="0 0 400 400">
+                    <svg id="nine_mens_morris-board" viewBox="0 0 400 400">
                         <line x1="20" y1="20" x2="380" y2="20" class="board-line" />
                         <line x1="380" y1="20" x2="380" y2="380" class="board-line" />
                         <line x1="380" y1="380" x2="20" y2="380" class="board-line" />
@@ -57,7 +57,7 @@
                 <div class="controls-area">
                     <div class="status-bar" id="status-bar">Player 1's turn - select and move a piece</div>
                     <div class="button-group">
-                        <button class="btn btn-primary" onclick="resetGame()">New Game</button>
+                        <button class="btn btn-primary" onclick="openAlgorithmModal()">New Game</button>
                         <button class="btn btn-icon" onclick="openHelpModal()">?</button>
                     </div>
                 </div>
@@ -67,6 +67,15 @@
                 <div class="moves-list" id="moves-list"></div>
             </div>
         </div>
+    </div>
+
+    <div class="modal-overlay" id="algo-modal-overlay">
+    <div class="modal-card algo-card">
+        <h3>CHOOSE AI OPPONENT</h3>
+        <p class="algo-subtitle">Select the search algorithm the AI will use to play against you.</p>
+        <div class="algo-options" id="algo-options"></div>
+        <button class="btn btn-primary" onclick="startGameWithAlgorithm()">START GAME</button>
+    </div>
     </div>
 
     <div class="modal-overlay hidden" id="help-modal-overlay">
