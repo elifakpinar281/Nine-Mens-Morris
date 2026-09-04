@@ -6,19 +6,19 @@ from heuristics import Heuristics
 
 class Minimax:
     def __init__(self, max_depth=3, heuristics=None):
-        self.max_depth = max_depth
+        self.max_depth = max_depth # Number of actions to look ahead
         self.heuristics = heuristics if heuristics else Heuristics()
         self.ai_player = None
 
     def best_move(self, game):
-        self.ai_player = game.current_player
+        self.ai_player = game.current_player # Evaluate from the AI's view
 
         best_score = -math.inf
         best = None
 
         for move in game.all_valid_moves():
             child = apply_move(game, move)
-            maximizing_next = (child.current_player == self.ai_player) # check whether it's the players or AIs turn
+            maximizing_next = (child.current_player == self.ai_player) # Check if the AI moves next
 
             score = self.minimax(child, self.max_depth - 1, maximizing_next)
 
@@ -39,15 +39,17 @@ class Minimax:
         if len(moves) == 0: # No valid moves -> terminal state
             return self.leaf_value(game, depth)
 
-        if maximizing_player: # Max Node
+        if maximizing_player: # Max Node (AI) -> choose highest score
             best_score = -math.inf
+
             for move in moves:
                 child = apply_move(game, move)
                 maximizing_next = (child.current_player == self.ai_player) # determine which player is next
                 score = self.minimax(child, depth - 1, maximizing_next)
                 best_score = max(best_score, score)
+
             return best_score
-        else: # Min node
+        else: # Min node (opponent) -> choose lowest score
             best_score = math.inf
             for move in moves:
                 child = apply_move(game, move)
@@ -58,9 +60,10 @@ class Minimax:
 
 
     def leaf_value(self, game, depth):
+        # Positive value favors the AI, negative value favors the opponent
         score = self.heuristics.evaluate(game, self.ai_player) # Evaluate from AI's perspective
 
-        # Prefer winning or loosing situations than any heuristic value
+        # Prefer wins and losses over normal heuristic values
         if score >= self.heuristics.WIN:
             return score + depth
         if score <= -self.heuristics.WIN:
