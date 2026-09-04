@@ -1,6 +1,8 @@
 let selectedPosition = null;
 let gameState = null;
 let gameStartTime = Date.now();
+let aiThinking = false;
+let selectedAlgorithmChoice = null;
 
 const NODE_COORDINATES = {
     'a7': [20, 20],   'd7': [200, 20],  'g7': [380, 20],
@@ -25,8 +27,61 @@ const REVERSE_NOTATION = {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
-    fetchGameState();
+    loadAlgorithmChoices();
 });
+
+function loadAlgorithmChoices() {
+    fetch('/api/algorithms')
+        .then(res => res.json())
+        .then(data => {
+            renderAlgorithmOptions(data.algorithms, data.selected);
+        })
+        .catch(err => console.error("Error loading algorithms:", err));
+}
+
+function renderAlgorithmOptions(algorithms, defaultKey) {
+    const container = document.getElementById('algo-options');
+    if (!container) return;
+    container.innerHTML = '';
+
+    selectedAlgorithmChoice = defaultKey || (algorithms[0] && algorithms[0].key);
+
+    algorithms.forEach(algo => {
+        const label = document.createElement('label');
+        label.className = 'algo-option' + (algo.key === selectedAlgorithmChoice ? ' selected' : '');
+
+        const radio = document.createElement('input');
+        radio.type = 'radio';
+        radio.name = 'algo-choice';
+        radio.value = algo.key;
+        radio.checked = algo.key === selectedAlgorithmChoice;
+        radio.addEventListener('change', () => {
+            selectedAlgorithmChoice = algo.key;
+            document.querySelectorAll('.algo-option').forEach(el => el.classList.remove('selected'));
+            label.classList.add('selected');
+        });
+
+        const text = document.createElement('span');
+        text.textContent = algo.label;
+
+        label.appendChild(radio);
+        label.appendChild(text);
+        container.appendChild(label);
+    });
+}
+
+function openAlgorithmModal() {
+    document.getElementById('algo-modal-overlay')?.classList.remove('hidden');
+}
+
+function closeAlgorithmModal() {
+    document.getElementById('algo-modal-overlay')?.classList.add('hidden');
+}
+
+function startGameWithAlgorithm() {
+    if (!selectedAlgorithmChoice) return;
+    resetGame(selectedAlgorithmChoice);
+}
 
 function fetchGameState() {
     fetch('/api/state')
@@ -39,7 +94,9 @@ function fetchGameState() {
 }
 
 function handleNodeClick(posStr) {
-    if (!gameState || gameState.winner !== null) return;
+    if (!gameState || gameState.winner !== null || aiThinking) return;
+    if (gameState.currentPlayer === gameState.aiPlayer) return;
+
     const posIndex = REVERSE_NOTATION[posStr];
 
     if (gameState.remove) {
@@ -82,14 +139,23 @@ function sendAction(actionData) {
     .catch(err => console.error("Error sending action:", err));
 }
 
-function resetGame() {
+function resetGame(algorithm) {
     selectedPosition = null;
+    aiThinking = false;
     gameStartTime = Date.now();
-    fetch('/api/reset', { method: 'POST' })
+
+    const algoToUse = algorithm || selectedAlgorithmChoice;
+
+    fetch('/api/reset', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(algoToUse ? { algorithm: algoToUse } : {})
+    })
         .then(res => res.json())
         .then(data => {
             gameState = data;
             closeHelpModal();
+            closeAlgorithmModal();
             const winModal = document.getElementById('modal-overlay');
             if (winModal) winModal.classList.add('hidden');
             render();
@@ -104,6 +170,31 @@ function render() {
     renderStatus();
     renderMoves();
     checkGameOver();
+    maybeTriggerAI();
+}
+
+function maybeTriggerAI() {
+    if (!gameState || aiThinking) return;
+    if (gameState.winner !== null && gameState.winner !== undefined) return;
+    if (gameState.currentPlayer !== gameState.aiPlayer) return;
+
+    aiThinking = true;
+    const statusBar = document.getElementById('status-bar');
+    if (statusBar) statusBar.innerText = 'AI is thinking...';
+
+    setTimeout(() => {
+        fetch('/api/ai_move', { method: 'POST' })
+            .then(res => res.json())
+            .then(data => {
+                aiThinking = false;
+                gameState = data;
+                render();
+            })
+            .catch(err => {
+                console.error("Error on AI move:", err);
+                aiThinking = false;
+            });
+    }, 400);
 }
 
 function updatePlayerCards() {
@@ -202,6 +293,11 @@ function renderStatus() {
 
     if (gameState.winner !== null && gameState.winner !== undefined) {
         statusBar.innerText = gameState.winner === 0 ? "Game Over! Draw!" : `Game Over! Player ${gameState.winner} Wins!`;
+        return;
+    }
+
+    if (aiThinking) {
+        statusBar.innerText = 'AI is thinking...';
         return;
     }
 
