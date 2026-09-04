@@ -18,10 +18,11 @@ class Minimax:
 
         for move in game.all_valid_moves():
             child = apply_move(game, move)
-            maximizing_next = (child.current_player == self.ai_player)
+            maximizing_next = (child.current_player == self.ai_player) # check whether it's the players or AIs turn
+
             score = self.minimax(child, self.max_depth - 1, maximizing_next)
 
-            if score > best_score:
+            if score > best_score: # Keep move with the highest score
                 best_score = score
                 best = move
 
@@ -29,22 +30,24 @@ class Minimax:
 
 
     def minimax(self, game, depth, maximizing_player):
+        # Return leaf_value when depth limit or a terminal state is reached
         if depth == 0 or is_game_over(game):
             return self.leaf_value(game, depth)
 
         moves = game.all_valid_moves()
-        if len(moves) == 0:
+
+        if len(moves) == 0: # No valid moves -> terminal state
             return self.leaf_value(game, depth)
 
-        if maximizing_player:
+        if maximizing_player: # Max Node
             best_score = -math.inf
             for move in moves:
                 child = apply_move(game, move)
-                maximizing_next = (child.current_player == self.ai_player)
+                maximizing_next = (child.current_player == self.ai_player) # determine which player is next
                 score = self.minimax(child, depth - 1, maximizing_next)
                 best_score = max(best_score, score)
             return best_score
-        else:
+        else: # Min node
             best_score = math.inf
             for move in moves:
                 child = apply_move(game, move)
@@ -55,8 +58,9 @@ class Minimax:
 
 
     def leaf_value(self, game, depth):
-        score = self.heuristics.evaluate(game, self.ai_player)
+        score = self.heuristics.evaluate(game, self.ai_player) # Evaluate from AI's perspective
 
+        # Prefer winning or loosing situations than any heuristic value
         if score >= self.heuristics.WIN:
             return score + depth
         if score <= -self.heuristics.WIN:
