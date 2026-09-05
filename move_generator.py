@@ -19,15 +19,7 @@ def get_successors(game):
     return successors
 
 def is_game_over(game):
-    if game.unplaced_men[1] != 0 or game.unplaced_men[2] != 0:
-        return False
-    if game.placed_men[1] < 3 or game.placed_men[2] < 3:
-        return True
-    if game.draw_limit <= 0:
-        return True
-    if len(get_successors(game)) == 0:
-        return True
-    return False
+    return game.check_for_win() is not None
 
 def get_winner(game):
     """
@@ -35,16 +27,7 @@ def get_winner(game):
     or None if the game hasn't ended yet. Only call this after checking
     is_game_over(game) is True.
     """
-    if not is_game_over(game):
-        return None
-    if game.placed_men[1] < 3:
-        return 2
-    if game.placed_men[2] < 3:
-        return 1
-    if game.draw_limit <= 0:
-        return 0
-    opponent = 2 if game.current_player == 1 else 1
-    return opponent
+    return game.check_for_win()
 
 if __name__ == "__main__":
     game = Game_rules()

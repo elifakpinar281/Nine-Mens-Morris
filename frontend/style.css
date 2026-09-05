@@ -153,10 +153,10 @@ header h1 {
     min-height: 0;
 }
 
-#muehle-board {
+#nine_mens_morris-board {
     height: 100%;
     width: 100%;
-    max-height: 52vh;
+    max-height: 60vh;
     aspect-ratio: 1 / 1;
 }
 
@@ -178,8 +178,8 @@ header h1 {
 }
 
 .piece-p2 {
-    fill: #1a1a1a;
-    stroke: #ffffff;
+    fill: #f1d6ae;
+    stroke: #1a1a1a;
     stroke-width: 2.5;
     cursor: pointer;
 }
@@ -343,4 +343,42 @@ header h1 {
     font-size: 0.6rem;
     line-height: 1.4;
     margin-top: 4px;
+}
+
+.algo-card {
+    text-align: left;
+}
+
+.algo-subtitle {
+    font-size: 0.55rem;
+    line-height: 1.5;
+    margin-top: -6px;
+}
+
+.algo-options {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 6px 0 4px;
+}
+
+.algo-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    border: 3px solid #1a1a1a;
+    padding: 12px;
+    cursor: pointer;
+    font-size: 0.6rem;
+}
+
+.algo-option.selected {
+    background-color: #ffe5e5;
+    border-color: #d9383a;
+}
+
+.algo-option input[type="radio"] {
+    width: 14px;
+    height: 14px;
+    cursor: pointer;
 }
