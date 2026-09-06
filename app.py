@@ -2,6 +2,7 @@ from flask import Flask, jsonify, request, send_from_directory
 from game_rules import Game_rules
 from alpha_beta_pruning import AlphaBetaPruning
 from minimax import Minimax
+from expectimax import Expectimax
 
 app = Flask(__name__, static_folder='frontend', static_url_path='')
 
@@ -16,6 +17,11 @@ AVAILABLE_ALGORITHMS = {
     "minimax": {
         "label": "Minimax",
         "class": Minimax,
+        "kwargs": {"max_depth": 3}
+    },
+    "expectimax": {
+        "label": "Expectimax",
+        "class": Expectimax,
         "kwargs": {"max_depth": 3}
     }
 }

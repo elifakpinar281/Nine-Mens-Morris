@@ -63,4 +63,5 @@ class Expectimax:
             return score - depth
 
         return score
-    
+
+    choose_move = best_move
