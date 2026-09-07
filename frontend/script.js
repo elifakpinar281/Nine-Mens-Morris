@@ -83,6 +83,12 @@ function startGameWithAlgorithm() {
     resetGame(selectedAlgorithmChoice);
 }
 
+function rematch() {
+    const winModal = document.getElementById('modal-overlay');
+    if (winModal) winModal.classList.add('hidden');
+    openAlgorithmModal();
+}
+
 function fetchGameState() {
     fetch('/api/state')
         .then(res => res.json())

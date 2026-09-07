@@ -1,6 +1,7 @@
 from flask import Flask, jsonify, request, send_from_directory
 from game_rules import Game_rules
 from alpha_beta_pruning import AlphaBetaPruning
+from greedy import Greedy
 from minimax import Minimax
 from expectimax import Expectimax
 
@@ -23,6 +24,10 @@ AVAILABLE_ALGORITHMS = {
         "label": "Expectimax",
         "class": Expectimax,
         "kwargs": {"max_depth": 3}
+    },
+    "greedy": {
+        "label": "Greedy",
+        "class": Greedy,
     }
 }
 
